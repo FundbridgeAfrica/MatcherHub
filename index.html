@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Matcher Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f2ef; /* Desktop Background */
+        }
+        h1, h2, h3, .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Hide Scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Animations */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="flex justify-center min-h-screen bg-gray-100">
+
+    <!-- Main App Container -->
+    <div class="w-full max-w-md h-[100dvh] bg-white shadow-2xl relative flex flex-col overflow-hidden">
+        
+        <!-- HEADER -->
+        <header class="h-16 bg-white/95 backdrop-blur-sm z-30 flex items-center justify-between px-5 border-b border-gray-100 shrink-0">
+            <div class="w-8"></div>
+            <h1 class="text-xl font-bold text-purple-900 tracking-tight">The Matcher Hub</h1>
+            <button class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition">
+                <i class="ph-bold ph-sliders-horizontal"></i>
+            </button>
+        </header>
+
+        <!-- MAIN SCROLLABLE AREA -->
+        <main class="flex-1 overflow-hidden relative bg-[#FAFAFA]">
+
+            <!-- === TAB 1: DISCOVERY (Matcher) === -->
+            <div id="tab-discovery" class="tab-content active h-full w-full px-0 overflow-y-scroll no-scrollbar scroll-smooth pb-24">
+                <div class="bg-white mb-4 shadow-sm pb-10">
+                    <!-- Photo -->
+                    <div class="relative h-[65vh] w-full group">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-6 left-6 text-white">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h2 class="text-3xl font-bold serif">Sarah, 27</h2>
+                                <div class="bg-blue-500 text-white rounded-full p-0.5" title="Verified">
+                                    <i class="ph-fill ph-check-circle text-lg"></i> 
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 text-sm font-medium text-gray-200">
+                                <i class="ph-fill ph-map-pin"></i> <span>5 miles away</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vitals -->
+                    <div class="p-5 border-b border-gray-50">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold flex items-center gap-1"><i class="ph-fill ph-church"></i> Christian</span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">Observant</span>
+                            <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">Wants Kids</span>
+                        </div>
+                    </div>
+
+                    <!-- Voice Prompt -->
+                    <div class="p-5 border-b border-gray-50 bg-purple-50/30 mx-4 mt-4 rounded-xl">
+                        <p class="text-xs font-bold text-purple-400 uppercase tracking-widest mb-2">Voice Prompt</p>
+                        <p class="serif text-lg text-gray-800 mb-3">A cause I'm passionate about...</p>
+                        <div class="flex items-center gap-3 bg-white p-3 rounded-full shadow-sm border border-purple-100">
+                            <button class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center"><i class="ph-fill ph-play"></i></button>
+                            <div class="h-1 w-full bg-gray-200 rounded-full overflow-hidden"><div class="h-full w-1/3 bg-purple-400"></div></div>
+                            <span class="text-xs text-gray-500 font-mono">0:14</span>
+                        </div>
+                    </div>
+                     <!-- FLOATING ACTIONS (Discovery Only) -->
+                    <div class="fixed bottom-24 left-0 right-0 flex justify-center gap-6 z-40 pointer-events-none">
+                        <button class="pointer-events-auto w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center text-gray-400 hover:text-red-500 border border-gray-100 transform hover:scale-105 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+                        <button class="pointer-events-auto w-12 h-12 bg-purple-50 rounded-full shadow-lg flex items-center justify-center text-purple-600 border border-purple-100 mt-2 transform hover:scale-105 transition"><i class="ph-fill ph-hand-waving text-xl"></i></button>
+                        <button class="pointer-events-auto w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center text-gray-400 hover:text-green-500 border border-gray-100 transform hover:scale-105 transition"><i class="ph-bold ph-heart text-2xl"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === TAB 2: DATE HUB === -->
+            <div id="tab-datehub" class="tab-content h-full w-full px-4 overflow-y-scroll no-scrollbar pb-24">
+                <div class="pt-4 mb-6">
+                    <h2 class="serif text-3xl font-bold text-gray-900">Date Hub</h2>
+                    <p class="text-gray-500 text-sm mt-1">Real world connections.</p>
+                </div>
+                <!-- Categories -->
+                <div class="flex gap-3 overflow-x-auto no-scrollbar mb-6 pb-2">
+                    <button class="px-4 py-2 bg-purple-600 text-white rounded-full text-sm font-medium shadow-md whitespace-nowrap">For You</button>
+                    <button class="px-4 py-2 bg-white text-gray-600 border border-gray-200 rounded-full text-sm font-medium whitespace-nowrap">Volunteering</button>
+                    <button class="px-4 py-2 bg-white text-gray-600 border border-gray-200 rounded-full text-sm font-medium whitespace-nowrap">Outdoors</button>
+                </div>
+                
+                <div class="space-y-4 pb-20">
+                     <!-- BOOSTED EVENT CARD (Visual for $2.99 Boost) -->
+                     <div class="bg-gradient-to-r from-amber-50 to-white rounded-2xl overflow-hidden shadow-md border border-amber-200 relative">
+                        <div class="absolute top-3 left-3 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm flex items-center gap-1">
+                            <i class="ph-fill ph-lightning"></i> FEATURED
+                        </div>
+                        <div class="relative h-40">
+                            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-gray-800 text-lg serif">Jazz Festival Plus One?</h3>
+                            <p class="text-sm text-gray-500 mt-1 flex items-center gap-1"><i class="ph-fill ph-calendar"></i> Sat, 7:00 PM • Downtown</p>
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" class="w-6 h-6 rounded-full border border-white shadow-sm">
+                                    <span class="text-xs text-gray-500 font-medium">David</span>
+                                </div>
+                                <button class="text-xs bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full font-bold">Join</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Regular Event Card -->
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex h-28">
+                        <div class="w-1/3 relative">
+                            <img src="https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover">
+                        </div>
+                        <div class="w-2/3 p-3 flex flex-col justify-center">
+                            <h3 class="font-bold text-gray-800 text-sm">Charity Run 5K</h3>
+                            <p class="text-xs text-gray-500 mt-1">Sat, 10 AM • City Park</p>
+                            <div class="mt-2 flex items-center gap-2">
+                                <img src="https://placehold.co/100x100/purple/white?text=S" class="w-5 h-5 rounded-full">
+                                <span class="text-xs text-gray-400">Sarah</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === TAB 3: COMMUNITY (New!) === -->
+            <div id="tab-community" class="tab-content h-full w-full px-4 overflow-y-scroll no-scrollbar pb-24">
+                <div class="pt-4 mb-6">
+                    <h2 class="serif text-3xl font-bold text-gray-900">Circles</h2>
+                    <p class="text-gray-500 text-sm mt-1">Find your tribe.</p>
+                </div>
+
+                <!-- Life Stages Section -->
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 mt-2">Life Stages</h3>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                        <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><i class="ph-fill ph-baby"></i></div>
+                        <span class="font-bold text-gray-700 text-sm">Single Parents</span>
+                        <span class="text-[10px] text-gray-400">1.2k members</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                        <div class="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center"><i class="ph-fill ph-plant"></i></div>
+                        <span class="font-bold text-gray-700 text-sm">Starting Over</span>
+                        <span class="text-[10px] text-gray-400">850 members</span>
+                    </div>
+                     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="ph-fill ph-hourglass"></i></div>
+                        <span class="font-bold text-gray-700 text-sm">Waiting & Worthy</span>
+                        <span class="text-[10px] text-gray-400">3.4k members</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                        <div class="w-8 h-8 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center"><i class="ph-fill ph-crown"></i></div>
+                        <span class="font-bold text-gray-700 text-sm">Seasoned (40+)</span>
+                        <span class="text-[10px] text-gray-400">900 members</span>
+                    </div>
+                </div>
+
+                <!-- Faith & Growth Section -->
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Faith & Growth</h3>
+                <div class="space-y-3 mb-6">
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0"><i class="ph-fill ph-book-open"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">Bible & Brunch</h4>
+                            <p class="text-xs text-gray-500">Discussion & Food</p>
+                        </div>
+                        <i class="ph-bold ph-caret-right ml-auto text-gray-300"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0"><i class="ph-fill ph-hands-praying"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">Prayer Warriors</h4>
+                            <p class="text-xs text-gray-500">Daily Requests</p>
+                        </div>
+                        <i class="ph-bold ph-caret-right ml-auto text-gray-300"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3">
+                         <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0"><i class="ph-fill ph-ring"></i></div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">Kingdom Courtship</h4>
+                            <p class="text-xs text-gray-500">Biblical Dating</p>
+                        </div>
+                        <i class="ph-bold ph-caret-right ml-auto text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === TAB 4: CHAT === -->
+            <div id="tab-chat" class="tab-content h-full w-full px-4 pt-4">
+                 <h2 class="serif text-3xl font-bold text-gray-900 mb-6">Matches</h2>
+                 <!-- Matches Row -->
+                 <div class="flex gap-4 overflow-x-auto no-scrollbar mb-8 py-2">
+                    <div class="flex flex-col items-center gap-1 min-w-[70px]">
+                        <div class="relative w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-amber-400 to-purple-600">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" class="w-full h-full rounded-full border-2 border-white object-cover">
+                        </div>
+                        <span class="text-xs font-bold text-gray-800">David</span>
+                        <span class="text-[10px] text-amber-600 font-medium"><i class="ph-fill ph-clock"></i> 22h left</span>
+                    </div>
+                    <div class="flex flex-col items-center gap-1 min-w-[70px]">
+                        <div class="relative w-16 h-16 rounded-full p-[2px] bg-gray-200">
+                             <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80" class="w-full h-full rounded-full border-2 border-white object-cover grayscale opacity-70">
+                             <div class="absolute -top-1 -right-1 bg-purple-600 text-white rounded-full p-1 border-2 border-white"><i class="ph-fill ph-hand-waving text-xs"></i></div>
+                        </div>
+                        <span class="text-xs font-bold text-gray-500">James</span>
+                    </div>
+                 </div>
+                 <!-- Messages -->
+                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Conversations</p>
+                 <div class="space-y-2">
+                     <div class="flex items-center gap-4 bg-white p-3 rounded-2xl shadow-sm border border-gray-50">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" class="w-14 h-14 rounded-full object-cover">
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1"><h4 class="font-bold text-gray-800">Sarah</h4><span class="text-xs text-gray-400">10:42 AM</span></div>
+                            <p class="text-sm text-gray-600 truncate">That coffee place sounds amazing...</p>
+                        </div>
+                     </div>
+                 </div>
+            </div>
+
+        </main>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="h-20 bg-white border-t border-gray-100 flex justify-between items-center shrink-0 z-50 px-2">
+            <button onclick="switchTab('discovery')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-purple-600" id="nav-discovery">
+                <i class="ph-fill ph-cards text-2xl mb-1"></i><span class="text-[10px] font-bold">Matcher</span>
+            </button>
+            <button onclick="switchTab('datehub')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400" id="nav-datehub">
+                <i class="ph-bold ph-calendar-heart text-2xl mb-1"></i><span class="text-[10px] font-bold">Date Hub</span>
+            </button>
+            <!-- NEW COMMUNITY TAB -->
+             <button onclick="switchTab('community')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400" id="nav-community">
+                <i class="ph-bold ph-users-three text-2xl mb-1"></i><span class="text-[10px] font-bold">Circles</span>
+            </button>
+            <button onclick="switchTab('chat')" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 relative" id="nav-chat">
+                <i class="ph-bold ph-chat-circle-dots text-2xl mb-1"></i><span class="text-[10px] font-bold">Chat</span>
+                <span class="absolute top-5 right-6 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-purple-600', 'text-amber-600', 'text-blue-600');
+                el.classList.add('text-gray-400');
+                const icon = el.querySelector('i');
+                if(icon) icon.classList.replace('ph-fill', 'ph-bold');
+            });
+
+            const activeBtn = document.getElementById('nav-' + tabId);
+            activeBtn.classList.remove('text-gray-400');
+            
+            if (tabId === 'datehub') activeBtn.classList.add('text-amber-600');
+            else if (tabId === 'community') activeBtn.classList.add('text-blue-600');
+            else activeBtn.classList.add('text-purple-600');
+            
+            activeBtn.querySelector('i').classList.replace('ph-bold', 'ph-fill');
+        }
+    </script>
+</body>
+</html>
