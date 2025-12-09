@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Matcher Hub - V2 Master</title>
+    <title>The Matcher Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,12 +11,7 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'], serif: ['Playfair Display', 'serif'] },
-                    colors: { hub: { purple: '#6D28D9', amber: '#F59E0B', cream: '#FAFAFA', dark: '#121212', card: '#1E1E1E', chatMe: '#E9D5FF', chatOther: '#F3F4F6' } },
-                    animation: { 'scan': 'scan 2s linear infinite', 'fade-in': 'fadeIn 0.5s ease-out forwards' },
-                    keyframes: {
-                        scan: { '0%': { top: '5%', opacity: '0' }, '10%': { opacity: '1' }, '90%': { opacity: '1' }, '100%': { top: '95%', opacity: '0' } },
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
-                    }
+                    colors: { hub: { purple: '#6D28D9', amber: '#F59E0B', cream: '#FAFAFA', dark: '#121212', card: '#1E1E1E', chatMe: '#6D28D9', chatOther: '#F3F4F6' } }
                 }
             }
         }
@@ -27,431 +22,398 @@
         body { -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .premium-blur { filter: blur(12px); transform: scale(1.1); }
         .btn-press { transition: transform 0.1s; cursor: pointer; touch-action: manipulation; }
         .btn-press:active { transform: scale(0.95); }
+        .premium-blur { filter: blur(12px); transform: scale(1.1); }
         
-        /* Screen Management */
-        .screen { display: none; height: 100%; width: 100%; flex-direction: column; }
-        .screen.active { display: flex; animation: fadeIn 0.4s ease-out; }
+        /* Screen & Tab Logic */
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; animation: fadeIn 0.4s ease-out; }
+        .screen.active { display: flex; }
         
-        /* Chat & Animations */
-        .slide-in { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .chat-bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; position: relative; margin-bottom: 8px; }
-        .chat-me { background-color: #6D28D9; color: white; border-bottom-right-radius: 4px; align-self: flex-end; }
-        .chat-other { background-color: #E5E7EB; color: #1F2937; border-bottom-left-radius: 4px; align-self: flex-start; }
+        .tab-content { display: none; flex: 1; overflow: hidden; flex-direction: column; animation: fadeTab 0.2s ease-out; }
+        .tab-content.active { display: flex; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeTab { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Chat Bubbles */
+        .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; position: relative; margin-bottom: 8px; animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .chat-me { background-color: #6D28D9; color: white; border-bottom-right-radius: 4px; align-self: flex-end; margin-left: auto; }
+        .chat-other { background-color: #E5E7EB; color: #1F2937; border-bottom-left-radius: 4px; align-self: flex-start; margin-right: auto; }
         .dark .chat-other { background-color: #374151; color: #F9FAFB; }
-        
-        /* Camera Overlay */
-        .camera-overlay { background: radial-gradient(circle, transparent 35%, rgba(0,0,0,0.85) 100%); }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 
-<body class="flex justify-center items-center min-h-[100dvh] bg-gray-200 dark:bg-black transition-colors duration-300">
+<body class="flex justify-center items-center min-h-screen bg-gray-200 dark:bg-black transition-colors duration-300">
 
+    <!-- DEVICE CONTAINER -->
     <div class="w-full max-w-md h-[100dvh] max-h-[900px] bg-hub-cream dark:bg-hub-dark shadow-2xl relative flex flex-col overflow-hidden sm:rounded-[2rem] sm:border-[8px] sm:border-gray-900 transition-colors duration-300">
 
-        <div id="screen-splash" class="screen active bg-hub-purple text-white relative z-50">
-            <div class="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 backdrop-blur-md border border-white/20 shadow-xl animate-bounce">
-                    <i class="ph-fill ph-infinity text-5xl"></i>
-                </div>
-                <h1 class="serif text-5xl font-bold mb-2 tracking-tight">Matcher Hub</h1>
-                <p class="text-white/70 text-lg font-light tracking-wide uppercase text-sm">Where Values Meet Vision</p>
-            </div>
-            <div class="p-8 w-full pb-12">
-                <button onclick="navTo('screen-onboarding')" class="btn-press w-full py-4 bg-white text-hub-purple font-bold text-lg rounded-2xl shadow-lg flex items-center justify-center gap-2">
-                    Join the Inner Circle <i class="ph-bold ph-arrow-right"></i>
-                </button>
-                <p class="text-xs text-center text-white/50 mt-4">By joining, you agree to our Covenant of Conduct.</p>
+        <!-- === SCREEN 1: WELCOME === -->
+        <div id="screen-welcome" class="screen active relative bg-hub-purple text-white justify-end pb-12 px-6">
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=800&q=80')] bg-cover bg-center opacity-40"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-hub-purple via-hub-purple/80 to-transparent"></div>
+            <div class="relative z-10 text-center">
+                <div class="w-20 h-20 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-white/30"><i class="ph-fill ph-heart-straight text-4xl text-white"></i></div>
+                <h1 class="text-4xl font-bold serif mb-2">The Matcher Hub</h1>
+                <p class="text-white/80 mb-10 text-lg font-light">Faith, meet empowerment. <br>Serious relationships only.</p>
+                <button onclick="navTo('screen-register')" class="btn-press w-full py-4 bg-white text-hub-purple font-bold rounded-2xl shadow-lg mb-4 text-lg">Get Started</button>
+                <button onclick="navTo('screen-login')" class="btn-press w-full py-4 bg-transparent border border-white/30 text-white font-bold rounded-2xl">I have an account</button>
             </div>
         </div>
 
-        <div id="screen-onboarding" class="screen bg-white dark:bg-hub-dark overflow-y-auto">
-            <div class="px-6 pt-12 pb-4">
-                <div class="w-12 h-1 bg-hub-purple rounded-full mb-6"></div>
-                <h2 class="serif text-3xl font-bold text-gray-900 dark:text-white mb-2">The Covenant</h2>
-                <p class="text-gray-500 text-sm">Before we match you, we need to know what matters.</p>
+        <!-- === SCREEN 2: LOGIN === -->
+        <div id="screen-login" class="screen bg-white dark:bg-hub-card px-6 pt-20">
+            <button onclick="navTo('screen-welcome')" class="absolute top-6 left-6 btn-press p-2 rounded-full bg-gray-100 dark:bg-gray-800"><i class="ph-bold ph-arrow-left text-xl dark:text-white"></i></button>
+            <h2 class="text-3xl font-bold serif text-hub-purple mb-2">Welcome Back</h2>
+            <p class="text-gray-500 dark:text-gray-400 mb-10">Sign in to continue your journey.</p>
+            <div class="space-y-4">
+                <input type="email" value="user@matcherhub.com" class="w-full p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none dark:text-white transition-all focus:border-hub-purple">
+                <input type="password" value="password" class="w-full p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none dark:text-white transition-all focus:border-hub-purple">
             </div>
-            <div class="px-6 space-y-8 py-4 flex-1">
-                <div class="space-y-3">
-                    <label class="text-xs font-bold uppercase text-gray-400 tracking-wider">Faith Alignment</label>
-                    <select class="w-full p-4 bg-gray-50 dark:bg-hub-card border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white outline-none focus:border-hub-purple appearance-none">
-                        <option>Christian - Non-Denominational</option>
-                        <option>Christian - Catholic</option>
-                        <option>Christian - Anglican</option>
-                    </select>
-                </div>
-                <div class="space-y-3">
-                    <label class="text-xs font-bold uppercase text-gray-400 tracking-wider">Relationship Intent</label>
-                    <div class="grid grid-cols-1 gap-3">
-                        <label class="flex items-center gap-4 p-4 border border-hub-purple bg-purple-50 dark:bg-purple-900/20 rounded-xl cursor-pointer">
-                            <input type="radio" name="intent" checked class="w-5 h-5 text-hub-purple accent-hub-purple">
-                            <div><div class="font-bold text-hub-purple dark:text-purple-300">Ready to Court</div><div class="text-xs text-gray-500 dark:text-gray-400">Marriage in < 12 months</div></div>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6 border-t border-gray-100 dark:border-gray-800 shrink-0">
-                <button onclick="navTo('screen-verification')" class="btn-press w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl shadow-lg">Continue to Verification</button>
-            </div>
+            <button onclick="handleLogin()" id="btn-login" class="btn-press w-full py-4 bg-hub-purple text-white font-bold rounded-xl shadow-lg mt-8 text-lg">Sign In</button>
         </div>
 
-        <div id="screen-verification" class="screen bg-black relative">
-            <div class="flex-1 relative overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover opacity-60 grayscale transition-all duration-500" id="camera-feed">
-                <div class="absolute inset-0 camera-overlay pointer-events-none"></div>
-                <div id="scan-frame" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-80 border-2 border-white/50 rounded-[3rem] overflow-hidden">
-                    <div id="scan-line" class="hidden w-full h-1 bg-green-400 absolute top-0 shadow-[0_0_20px_rgba(74,222,128,1)] animate-scan"></div>
-                </div>
-                <div class="absolute bottom-10 left-0 right-0 text-center px-6 z-10">
-                    <h3 id="scan-text" class="text-white font-bold text-xl mb-2">Liveness Check</h3>
-                    <p id="scan-sub" class="text-gray-400 text-sm">Center your face to verify humanity.</p>
-                </div>
+        <!-- === SCREEN 3: REGISTER === -->
+        <div id="screen-register" class="screen bg-white dark:bg-hub-card px-6 pt-20">
+            <button onclick="navTo('screen-welcome')" class="absolute top-6 left-6 btn-press p-2 rounded-full bg-gray-100 dark:bg-gray-800"><i class="ph-bold ph-arrow-left text-xl dark:text-white"></i></button>
+            <h2 class="text-3xl font-bold serif text-hub-purple mb-2">Create Account</h2>
+            <p class="text-gray-500 dark:text-gray-400 mb-8">Join the 70% of serious daters.</p>
+            <div class="space-y-4">
+                <input type="text" placeholder="Full Name" class="w-full p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none dark:text-white">
+                <input type="email" placeholder="Email" class="w-full p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none dark:text-white">
+                <input type="password" placeholder="Password" class="w-full p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none dark:text-white">
             </div>
-            <div class="h-32 bg-black flex items-center justify-center px-6 shrink-0 relative z-20">
-                <button onclick="startScan()" id="scan-btn" class="btn-press w-20 h-20 rounded-full border-4 border-white flex items-center justify-center hover:bg-white/10 transition-colors">
-                    <div class="w-16 h-16 bg-white rounded-full"></div>
-                </button>
-            </div>
-            <div id="scan-success" class="hidden absolute inset-0 z-50 bg-hub-purple flex-col items-center justify-center text-center p-8 animate-fade-in">
-                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center text-hub-purple mb-6 shadow-2xl scale-110"><i class="ph-bold ph-check text-5xl"></i></div>
-                <h2 class="serif text-3xl font-bold text-white mb-2">Verified</h2>
-                <p class="text-white/80 mb-8">Welcome, Ogirima.</p>
-                <button onclick="navTo('screen-app')" class="btn-press w-full py-4 bg-white text-hub-purple font-bold rounded-2xl shadow-xl">Enter Hub</button>
-            </div>
+            <button onclick="navTo('screen-onboarding-1')" class="btn-press w-full py-4 bg-hub-purple text-white font-bold rounded-xl shadow-lg mt-8 text-lg">Continue</button>
         </div>
 
-        <div id="screen-app" class="screen bg-hub-cream dark:bg-hub-dark">
+        <!-- === SCREEN 4: ONBOARDING VALUES === -->
+        <div id="screen-onboarding-1" class="screen bg-hub-cream dark:bg-hub-dark px-6 pt-12">
+            <div class="w-full h-1 bg-gray-200 rounded-full mb-8"><div class="w-1/2 h-full bg-hub-purple rounded-full"></div></div>
+            <h2 class="text-3xl font-bold serif text-gray-900 dark:text-white mb-2">Your Values</h2>
+            <p class="text-gray-500 dark:text-gray-400 mb-8">We prioritize compatibility over chemistry.</p>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Denomination</label><select class="w-full p-4 bg-white dark:bg-hub-card border border-gray-200 dark:border-gray-700 rounded-xl outline-none dark:text-white"><option>Christian (Non-Denom)</option><option>Catholic</option><option>Protestant</option></select></div>
+                <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Relationship Goal</label><div class="grid grid-cols-2 gap-3"><button class="btn-press p-4 bg-white dark:bg-hub-card border-2 border-hub-purple text-hub-purple font-bold rounded-xl">Marriage</button><button class="btn-press p-4 bg-white dark:bg-hub-card border border-gray-200 dark:border-gray-700 text-gray-500 rounded-xl">Courtship</button></div></div>
+            </div>
+            <button onclick="navTo('screen-onboarding-2')" class="btn-press w-full py-4 bg-hub-purple text-white font-bold rounded-xl shadow-lg mt-auto mb-8 text-lg">Next Step</button>
+        </div>
+
+        <!-- === SCREEN 5: VERIFICATION === -->
+        <div id="screen-onboarding-2" class="screen bg-hub-cream dark:bg-hub-dark px-6 pt-12 items-center text-center">
+            <div class="w-full h-1 bg-gray-200 rounded-full mb-8"><div class="w-full h-full bg-hub-purple rounded-full"></div></div>
+            <div class="w-24 h-24 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-500 mb-6"><i class="ph-fill ph-shield-check text-5xl"></i></div>
+            <h2 class="text-3xl font-bold serif text-gray-900 dark:text-white mb-2">Verify it's you</h2>
+            <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-xs mx-auto">Mandatory liveness check to keep our community safe.</p>
+            <div class="w-48 h-48 bg-gray-200 dark:bg-gray-800 rounded-full mx-auto mb-8 flex items-center justify-center border-4 border-dashed border-gray-300 dark:border-gray-700"><i class="ph-bold ph-camera text-4xl text-gray-400"></i></div>
+            <button onclick="simulateVerification()" id="verify-btn" class="btn-press w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-xl shadow-lg mt-auto mb-8 text-lg">Take Selfie</button>
+        </div>
+
+        <!-- === SCREEN 6: MAIN APP === -->
+        <div id="screen-main" class="screen h-full relative">
             
-            <header id="main-header" class="h-16 bg-white/90 dark:bg-hub-dark/90 backdrop-blur-md z-30 flex items-center justify-between px-5 border-b border-gray-100 dark:border-gray-800 shrink-0 transition-all duration-300">
-                <button onclick="toggleTheme()" class="btn-press w-10 h-10 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <i id="theme-icon" class="ph-bold ph-moon text-xl"></i>
-                </button>
-                <h1 id="header-title" class="text-xl font-bold text-hub-purple tracking-tight serif">The Matcher Hub</h1>
-                <button onclick="toggleModal('modal-filter')" class="btn-press w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 relative">
-                    <i class="ph-bold ph-sliders-horizontal text-lg"></i>
-                    <div class="absolute top-0 right-0 w-2.5 h-2.5 bg-hub-amber rounded-full border-2 border-white dark:border-hub-dark"></div>
-                </button>
+            <!-- Header -->
+            <header class="h-16 bg-white/90 dark:bg-hub-dark/90 backdrop-blur-md z-30 flex items-center justify-between px-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
+                <button onclick="toggleTheme()" class="btn-press w-10 h-10 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"><i id="theme-icon" class="ph-bold ph-moon text-xl"></i></button>
+                <h1 class="text-xl font-bold text-hub-purple tracking-tight serif">The Matcher Hub</h1>
+                <button onclick="toggleModal('modal-filter')" class="btn-press w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 relative"><i class="ph-bold ph-sliders-horizontal text-lg"></i><div class="absolute top-0 right-0 w-2.5 h-2.5 bg-hub-amber rounded-full border-2 border-white dark:border-hub-dark"></div></button>
             </header>
 
+            <!-- TABS -->
             <main class="flex-1 overflow-hidden relative z-0">
-
+                
+                <!-- 1. MATCHER -->
                 <div id="tab-discovery" class="tab-content active relative">
                     <div class="flex border-b border-gray-100 dark:border-gray-800 bg-white/95 dark:bg-hub-dark/95 backdrop-blur-sm px-4 pt-2 shrink-0 z-20">
-                        <button onclick="switchDiscoveryView('stack')" id="subnav-stack" class="btn-press flex-1 pb-3 text-sm font-bold text-hub-purple border-b-2 border-hub-purple">Stack</button>
-                        <button onclick="switchDiscoveryView('likes')" id="subnav-likes" class="btn-press flex-1 pb-3 text-sm font-bold text-gray-400 dark:text-gray-500 border-b-2 border-transparent flex justify-center gap-1">Likes You <span class="bg-hub-amber/20 text-hub-amber text-[10px] px-1.5 py-0.5 rounded-full">12</span></button>
+                        <button onclick="switchView('stack')" id="subnav-stack" class="btn-press flex-1 pb-3 text-sm font-bold text-hub-purple border-b-2 border-hub-purple">Stack</button>
+                        <button onclick="switchView('likes')" id="subnav-likes" class="btn-press flex-1 pb-3 text-sm font-bold text-gray-400 dark:text-gray-500 border-b-2 border-transparent flex justify-center gap-1">Likes You <span class="bg-hub-amber/20 text-hub-amber text-[10px] px-1.5 py-0.5 rounded-full">12</span></button>
                     </div>
                     <div id="view-stack" class="flex-1 overflow-y-auto no-scrollbar pb-24 relative">
-                        <div id="matcher-card-container"></div>
-                        <div id="matcher-controls" class="absolute bottom-6 left-0 right-0 flex justify-center gap-6 z-30">
-                            <button onclick="handleSwipe('left')" class="btn-press w-16 h-16 bg-white dark:bg-hub-card rounded-full shadow-xl flex items-center justify-center text-gray-400 hover:text-red-500 border border-gray-100 dark:border-gray-700"><i class="ph-bold ph-x text-3xl"></i></button>
-                            <button onclick="toggleModal('modal-premium')" class="btn-press w-14 h-14 bg-purple-50 dark:bg-purple-900/30 rounded-full shadow-lg flex items-center justify-center text-hub-purple border border-purple-100 mt-3"><i class="ph-fill ph-hand-waving text-2xl"></i></button>
-                            <button onclick="handleSwipe('right')" class="btn-press w-16 h-16 bg-white dark:bg-hub-card rounded-full shadow-xl flex items-center justify-center text-gray-400 hover:text-green-500 border border-gray-100 dark:border-gray-700"><i class="ph-bold ph-heart text-3xl"></i></button>
+                        <div id="card-container"></div>
+                        <div class="absolute bottom-6 left-0 right-0 flex justify-center gap-6 z-30">
+                            <button onclick="handleSwipe('left')" class="btn-press w-16 h-16 bg-white dark:bg-hub-card rounded-full shadow-xl text-gray-400 hover:text-red-500 flex items-center justify-center border border-gray-100 dark:border-gray-700"><i class="ph-bold ph-x text-3xl"></i></button>
+                            <button onclick="toggleModal('modal-premium')" class="btn-press w-14 h-14 bg-purple-50 dark:bg-purple-900/30 rounded-full shadow-lg text-hub-purple border border-purple-100 flex items-center justify-center mt-3"><i class="ph-fill ph-hand-waving text-2xl"></i></button>
+                            <button onclick="handleSwipe('right')" class="btn-press w-16 h-16 bg-white dark:bg-hub-card rounded-full shadow-xl text-gray-400 hover:text-green-500 flex items-center justify-center border border-gray-100 dark:border-gray-700"><i class="ph-bold ph-heart text-3xl"></i></button>
                         </div>
                     </div>
                     <div id="view-likes" class="hidden flex-1 overflow-y-auto no-scrollbar p-4 pb-24 relative">
-                        <div class="text-center mb-6"><p class="text-gray-500 dark:text-gray-400 text-sm">See the <span class="font-bold">12 people</span> who liked you.</p></div>
                         <div class="grid grid-cols-2 gap-3" id="likes-grid"></div>
-                        <div class="absolute bottom-10 left-4 right-4 bg-white/90 dark:bg-hub-card/90 backdrop-blur-xl p-6 rounded-3xl shadow-2xl border border-amber-100 dark:border-amber-900/50 text-center z-10">
-                            <h3 class="serif text-xl font-bold text-gray-900 dark:text-white mb-2">Unlock Your Admirers</h3>
-                            <button onclick="toggleModal('modal-premium')" class="btn-press w-full py-4 bg-gradient-to-r from-hub-amber to-orange-600 text-white font-bold rounded-2xl shadow-lg">Unlock for $19.99/mo</button>
-                        </div>
+                        <div class="absolute bottom-10 left-4 right-4 bg-white/90 dark:bg-hub-card/90 backdrop-blur-xl p-6 rounded-3xl shadow-2xl border border-amber-100 text-center z-10"><h3 class="serif text-xl font-bold text-gray-900 dark:text-white mb-2">Unlock Your Admirers</h3><button onclick="toggleModal('modal-premium')" class="btn-press w-full py-4 bg-gradient-to-r from-hub-amber to-orange-600 text-white font-bold rounded-2xl shadow-lg">Unlock for $19.99/mo</button></div>
                     </div>
                 </div>
 
+                <!-- 2. DATE HUB -->
                 <div id="tab-datehub" class="tab-content w-full">
                     <div class="px-4 pt-6 mb-4"><h2 class="serif text-3xl font-bold text-gray-900 dark:text-white">Date Hub</h2><p class="text-gray-500 text-sm">Real world connections.</p></div>
-                    <div class="flex gap-3 overflow-x-auto no-scrollbar px-4 mb-6 shrink-0">
-                        <button class="btn-press px-5 py-2.5 bg-hub-purple text-white rounded-full text-sm font-bold shadow-lg">For You</button>
-                        <button class="btn-press px-5 py-2.5 bg-white dark:bg-hub-card text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full text-sm font-bold">Volunteering</button>
-                    </div>
+                    <div class="flex gap-3 overflow-x-auto no-scrollbar px-4 mb-6 shrink-0"><button class="btn-press px-5 py-2.5 bg-hub-purple text-white rounded-full text-sm font-bold shadow-lg">For You</button><button class="btn-press px-5 py-2.5 bg-white dark:bg-hub-card text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-full text-sm font-bold">Volunteering</button></div>
                     <div id="events-list" class="flex-1 overflow-y-auto px-4 pb-24 space-y-5"></div>
                 </div>
 
+                <!-- 3. COMMUNITY -->
                 <div id="tab-community" class="tab-content w-full relative">
                     <div id="community-list-view" class="h-full flex flex-col">
-                        <div class="px-4 pt-6 mb-4"><h2 class="serif text-3xl font-bold text-gray-900 dark:text-white">Circles</h2><p class="text-gray-500 text-sm">Find your tribe.</p></div>
+                        <div class="px-4 pt-6 mb-4 flex justify-between items-center">
+                            <div><h2 class="serif text-3xl font-bold text-gray-900 dark:text-white">Circles</h2><p class="text-gray-500 text-sm">Find your tribe.</p></div>
+                            <button onclick="toggleModal('modal-premium')" class="btn-press w-10 h-10 bg-hub-purple text-white rounded-full flex items-center justify-center shadow-lg"><i class="ph-bold ph-plus"></i></button>
+                        </div>
                         <div class="flex-1 overflow-y-auto px-4 pb-24">
                             <h3 class="text-xs font-extrabold text-gray-400 uppercase mb-4">Life Stages</h3>
-                            <div class="grid grid-cols-2 gap-3 mb-8" id="community-grid-lifestages"></div>
+                            <div class="grid grid-cols-2 gap-3 mb-8" id="community-lifestages"></div>
                             <h3 class="text-xs font-extrabold text-gray-400 uppercase mb-4">Faith & Growth</h3>
-                            <div class="space-y-3 mb-6" id="community-list-faith"></div>
+                            <div class="space-y-3 mb-6" id="community-faith"></div>
+                            <h3 class="text-xs font-extrabold text-gray-400 uppercase mb-4">Support & Interests</h3>
+                            <div class="space-y-3 mb-6" id="community-support"></div>
                         </div>
                     </div>
-                    <div id="community-feed-view" class="absolute inset-0 bg-gray-100 dark:bg-black z-40 hidden flex-col slide-in">
-                        <div id="feed-header" class="h-16 bg-white dark:bg-hub-card flex items-center px-4 border-b border-gray-200 dark:border-gray-800 shrink-0 gap-3">
-                            <button onclick="closeFeed()" class="btn-press p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"><i class="ph-bold ph-arrow-left text-xl text-gray-800 dark:text-white"></i></button>
+                    <!-- Nested Feed View -->
+                    <div id="community-feed-view" class="absolute inset-0 bg-gray-100 dark:bg-black z-40 hidden flex-col transition-transform duration-300 translate-x-full">
+                        <div class="h-16 bg-white dark:bg-hub-card flex items-center px-4 border-b border-gray-200 dark:border-gray-800 shrink-0 gap-3">
+                            <button onclick="closeFeed()" class="btn-press p-2"><i class="ph-bold ph-arrow-left text-xl text-gray-800 dark:text-white"></i></button>
                             <h3 id="feed-title" class="font-bold text-lg text-gray-900 dark:text-white">Circle Name</h3>
                         </div>
                         <div id="feed-content" class="flex-1 overflow-y-auto p-4 space-y-4 pb-24"></div>
                     </div>
                 </div>
 
+                <!-- 4. CHAT -->
                 <div id="tab-chat" class="tab-content w-full relative">
                     <div id="chat-list-view" class="h-full flex flex-col">
                         <div class="px-4 pt-6 flex-1 overflow-y-auto pb-24">
                             <h2 class="serif text-3xl font-bold text-gray-900 dark:text-white mb-6">Matches</h2>
-                            <div class="flex gap-5 overflow-x-auto no-scrollbar mb-8 py-2" id="new-matches-list"></div>
+                            <div class="flex gap-5 overflow-x-auto no-scrollbar mb-8 py-2" id="matches-row"></div>
                             <p class="text-xs font-extrabold text-gray-400 uppercase mb-4">Conversations</p>
                             <div class="space-y-4" id="conversations-list"></div>
                         </div>
                     </div>
-                    <div id="chat-detail-view" class="absolute inset-0 bg-white dark:bg-hub-dark z-50 hidden flex-col slide-in">
+                    <!-- Nested Chat View -->
+                    <div id="chat-detail-view" class="absolute inset-0 bg-white dark:bg-hub-dark z-50 hidden flex-col transition-transform duration-300 translate-x-full">
                         <div class="h-16 bg-white/95 dark:bg-hub-card/95 backdrop-blur flex items-center px-4 border-b border-gray-100 dark:border-gray-800 shrink-0 gap-3">
                             <button onclick="closeChat()" class="btn-press p-2"><i class="ph-bold ph-arrow-left text-xl text-gray-800 dark:text-white"></i></button>
-                            <div class="flex items-center gap-3">
-                                <img id="chat-header-img" src="" class="w-10 h-10 rounded-full object-cover border border-gray-200">
-                                <div><h3 id="chat-header-name" class="font-bold text-gray-900 dark:text-white text-sm">Name</h3><p class="text-xs text-green-500 font-medium">Online now</p></div>
-                            </div>
+                            <div class="flex items-center gap-3"><img id="chat-header-img" src="" class="w-10 h-10 rounded-full object-cover border border-gray-200"><div><h3 id="chat-header-name" class="font-bold text-gray-900 dark:text-white text-sm">Name</h3><p class="text-xs text-green-500 font-medium">Online now</p></div></div>
                         </div>
                         <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col bg-gray-50 dark:bg-black/50"></div>
                         <div class="p-3 bg-white dark:bg-hub-card border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 shrink-0 pb-6">
-                            <input id="chat-input" type="text" placeholder="Type a message..." class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-hub-purple text-gray-900 dark:text-white" onkeypress="handleEnter(event)">
+                            <input id="chat-input" type="text" placeholder="Type a message..." class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-full px-4 py-2.5 text-sm dark:text-white" onkeypress="handleEnter(event)">
                             <button onclick="sendMessage()" class="btn-press p-2 text-hub-purple"><i class="ph-fill ph-paper-plane-right text-2xl"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. PROFILE (NEW!) -->
+                <div id="tab-profile" class="tab-content w-full">
+                    <div class="flex-1 overflow-y-auto pb-24">
+                        <div class="relative h-40 bg-hub-purple">
+                            <div class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full border-4 border-white dark:border-hub-card bg-gray-300 overflow-hidden"><img src="https://placehold.co/200x200/png" class="w-full h-full object-cover"></div>
+                        </div>
+                        <div class="mt-12 text-center px-4">
+                            <h2 class="text-2xl font-bold serif text-gray-900 dark:text-white flex items-center justify-center gap-2">You <i class="ph-fill ph-check-circle text-blue-500"></i></h2>
+                            <p class="text-gray-500">Free Member</p>
+                            <button onclick="toggleModal('modal-premium')" class="btn-press mt-4 px-6 py-2 bg-gradient-to-r from-hub-amber to-orange-500 text-white font-bold rounded-full shadow-lg text-sm">Upgrade to Founder's Club</button>
+                        </div>
+                        <div class="mt-8 px-4 space-y-4">
+                            <div class="bg-white dark:bg-hub-card rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+                                <h3 class="text-sm font-bold text-gray-400 uppercase mb-3">Settings</h3>
+                                <button class="btn-press w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"><span class="text-gray-700 dark:text-gray-200">Personal Info</span><i class="ph-bold ph-caret-right"></i></button>
+                                <button class="btn-press w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"><span class="text-gray-700 dark:text-gray-200">Change Password</span><i class="ph-bold ph-caret-right"></i></button>
+                                <button class="btn-press w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"><span class="text-gray-700 dark:text-gray-200">Notifications</span><i class="ph-bold ph-caret-right"></i></button>
+                            </div>
+                            <button onclick="logout()" class="btn-press w-full py-4 bg-white dark:bg-hub-card text-red-500 font-bold rounded-2xl shadow-sm border border-red-100 dark:border-red-900/30">Log Out</button>
                         </div>
                     </div>
                 </div>
 
             </main>
 
-            <nav id="bottom-nav" class="h-20 bg-white/95 dark:bg-hub-card/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex justify-around items-center shrink-0 z-[40] px-2 relative transition-colors duration-300">
-                <button onclick="switchTab('discovery')" class="nav-btn btn-press w-16 h-full flex flex-col items-center justify-center text-hub-purple" id="nav-discovery"><i class="ph-fill ph-cards text-2xl mb-1"></i></button>
-                <button onclick="switchTab('datehub')" class="nav-btn btn-press w-16 h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" id="nav-datehub"><i class="ph-bold ph-calendar-heart text-2xl mb-1"></i></button>
-                <button onclick="switchTab('community')" class="nav-btn btn-press w-16 h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" id="nav-community"><i class="ph-bold ph-users-three text-2xl mb-1"></i></button>
-                <button onclick="switchTab('chat')" class="nav-btn btn-press w-16 h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 relative" id="nav-chat"><i class="ph-bold ph-chat-circle-dots text-2xl mb-1"></i><span class="absolute top-5 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-hub-card"></span></button>
+            <!-- NAVIGATION BAR -->
+            <nav class="h-20 bg-white/95 dark:bg-hub-card/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex justify-between items-center shrink-0 z-[40] px-1 relative transition-colors duration-300">
+                <button onclick="switchTab('discovery')" class="nav-btn btn-press w-full h-full flex flex-col items-center justify-center text-hub-purple" id="nav-discovery"><i class="ph-fill ph-cards text-2xl mb-1"></i><span class="text-[10px] font-bold">Match</span></button>
+                <button onclick="switchTab('datehub')" class="nav-btn btn-press w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" id="nav-datehub"><i class="ph-bold ph-calendar-heart text-2xl mb-1"></i><span class="text-[10px] font-bold">Dates</span></button>
+                <button onclick="switchTab('community')" class="nav-btn btn-press w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" id="nav-community"><i class="ph-bold ph-users-three text-2xl mb-1"></i><span class="text-[10px] font-bold">Tribes</span></button>
+                <button onclick="switchTab('chat')" class="nav-btn btn-press w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 relative" id="nav-chat"><i class="ph-bold ph-chat-circle-dots text-2xl mb-1"></i><span class="text-[10px] font-bold">Chat</span><span class="absolute top-4 right-4 w-2 h-2 bg-red-500 rounded-full border border-white"></span></button>
+                <button onclick="switchTab('profile')" class="nav-btn btn-press w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" id="nav-profile"><i class="ph-bold ph-user text-2xl mb-1"></i><span class="text-[10px] font-bold">Profile</span></button>
             </nav>
+
         </div>
 
-        <div id="modal-premium" class="hidden fixed inset-0 bg-black/60 dark:bg-black/80 z-[100] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm transition-all">
-            <div class="bg-white dark:bg-hub-card w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative overflow-hidden">
+        <!-- MODALS -->
+        <!-- PREMIUM MODAL -->
+        <div id="modal-premium" class="hidden fixed inset-0 bg-black/70 dark:bg-black/90 z-[100] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+            <div class="bg-white dark:bg-hub-card w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative overflow-hidden transform scale-100">
                 <button onclick="toggleModal('modal-premium')" class="btn-press absolute top-5 right-5 text-gray-400"><i class="ph-bold ph-x text-xl"></i></button>
                 <div class="text-center mt-4"><h2 class="serif text-3xl font-bold text-gray-900 dark:text-white">Founder's Club</h2><p class="text-sm text-gray-500 mt-2">The inner circle.</p></div>
-                <button class="btn-press w-full mt-6 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl shadow-xl">Join for $19.99 / mo</button>
+                <div class="space-y-4 mt-6 mb-6">
+                    <div class="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl"><i class="ph-fill ph-eye text-hub-purple text-xl"></i> <span class="text-sm font-bold dark:text-white">See Who Likes You</span></div>
+                    <div class="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl"><i class="ph-fill ph-hand-waving text-hub-amber text-xl"></i> <span class="text-sm font-bold dark:text-white">5 Free Nudges / Week</span></div>
+                    <div class="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl"><i class="ph-fill ph-users text-blue-500 text-xl"></i> <span class="text-sm font-bold dark:text-white">Create New Circles</span></div>
+                </div>
+                <button class="btn-press w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold rounded-2xl shadow-xl">Join for $19.99 / mo</button>
             </div>
         </div>
+
+        <!-- FILTER MODAL -->
         <div id="modal-filter" class="hidden fixed inset-0 bg-black/60 dark:bg-black/80 z-[100] flex items-end justify-center sm:items-center backdrop-blur-sm">
             <div class="bg-white dark:bg-hub-card w-full max-w-sm h-[60vh] rounded-t-[2rem] sm:rounded-[2rem] p-6 flex flex-col shadow-2xl overflow-hidden">
                 <div class="flex justify-between items-center mb-6"><h3 class="font-bold text-lg dark:text-white">Filters</h3><button onclick="toggleModal('modal-filter')" class="text-hub-purple font-bold">Done</button></div>
-                <div class="space-y-6"><div><label class="text-sm font-bold text-gray-500 block mb-2">Distance</label><input type="range" class="w-full accent-hub-purple"></div></div>
+                <div class="space-y-6">
+                    <div><label class="text-sm font-bold text-gray-500 block mb-2">Distance</label><input type="range" class="w-full accent-hub-purple"></div>
+                </div>
             </div>
         </div>
 
     </div>
 
+    <!-- === JAVASCRIPT === -->
     <script>
-        // --- SCREEN NAV ---
-        function navTo(screenId) {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        function startScan() {
-            const btn = document.getElementById('scan-btn');
-            const feed = document.getElementById('camera-feed');
-            const line = document.getElementById('scan-line');
-            const text = document.getElementById('scan-text');
-            const sub = document.getElementById('scan-sub');
-
-            btn.classList.add('hidden');
-            feed.classList.remove('grayscale', 'opacity-60');
-            line.classList.remove('hidden');
-            text.innerText = "Scanning...";
-            sub.innerText = "Keep steady.";
-
-            setTimeout(() => {
-                document.getElementById('scan-success').classList.remove('hidden');
-                document.getElementById('scan-success').classList.add('flex');
-            }, 2500);
-        }
-
-        // --- DASHBOARD DATA ---
+        // --- DATA ---
         const profiles = [
-            { id: 1, name: "Sarah", age: 27, dist: "5 miles", verified: true, tags: ["Christian", "Observant"], bio: "Coffee after Sunday service and finding a new hiking trail.", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" },
-            { id: 2, name: "Michael", age: 30, dist: "2 miles", verified: true, tags: ["Catholic", "Wants Kids"], bio: "Looking for someone to share faith and adventure with.", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80" },
+            { name: "Sarah", age: 27, dist: "5 miles", verified: true, tags: ["Christian", "Observant"], bio: "Coffee after Sunday service and finding a new hiking trail.", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" },
+            { name: "Michael", age: 30, dist: "2 miles", verified: true, tags: ["Catholic", "Wants Kids"], bio: "Looking for someone to share faith and adventure with.", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80" }
         ];
-
         const events = [
             { title: "Jazz Festival Plus One?", host: "David", date: "Sat, 7:00 PM", img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=400&q=80", featured: true },
-            { title: "Charity Run 5K", host: "Sarah", date: "Sat, 10:00 AM", img: "https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&w=400&q=80", featured: false },
+            { title: "Charity Run 5K", host: "Sarah", date: "Sat, 10:00 AM", img: "https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&w=400&q=80", featured: false }
         ];
-
-        const circles = [
-            { id: 1, name: "Single Parents", icon: "ph-baby", members: "1.2k", color: "blue" },
-            { id: 2, name: "Starting Over", icon: "ph-plant", members: "850", color: "green" },
-            { id: 3, name: "Bible & Brunch", icon: "ph-book-open", members: "2.1k", color: "purple" }
-        ];
-
-        const feedPosts = {
-            1: [{ user: "Emily", time: "2h ago", text: "Balancing work and kids is tough, but faith keeps me going." }],
-            2: [{ user: "John", time: "1d ago", text: "Starting over is scary, but God is good." }],
-            3: [{ user: "Rachel", time: "30m ago", text: "Who is bringing the donuts this Saturday?" }]
+        // FULL TRIBE LIST
+        const tribes = {
+            lifestages: [
+                { id: 1, name: "Single Parents Connect", icon: "ph-baby", color: "blue", mem: "1.2k" },
+                { id: 2, name: "Starting Over", icon: "ph-plant", color: "green", mem: "850" },
+                { id: 3, name: "Waiting & Worthy", icon: "ph-hourglass", color: "purple", mem: "3.4k" },
+                { id: 4, name: "Seasoned Singles (40+)", icon: "ph-crown", color: "orange", mem: "900" }
+            ],
+            faith: [
+                { id: 5, name: "Bible & Brunch", icon: "ph-book-open", color: "red" },
+                { id: 6, name: "Prayer Warriors", icon: "ph-hands-praying", color: "blue" },
+                { id: 7, name: "Kingdom Courtship", icon: "ph-ring", color: "amber" },
+                { id: 8, name: "Iron Sharpens Iron", icon: "ph-sword", color: "gray" },
+                { id: 9, name: "Ruth & Boaz Circle", icon: "ph-heart", color: "pink" }
+            ],
+            support: [
+                { id: 10, name: "The Talking Stage", icon: "ph-chat-circle-text", color: "teal" },
+                { id: 11, name: "Dating with Intent", icon: "ph-target", color: "indigo" },
+                { id: 12, name: "Fit & Faithful", icon: "ph-sneaker", color: "orange" },
+                { id: 13, name: "Creatives & Artists", icon: "ph-paint-brush", color: "purple" }
+            ]
         };
-
         const chats = [
-            { id: 101, name: "David", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80", lastMsg: "That coffee place sounds amazing!", time: "10:42 AM", online: true, messages: [
-                { sender: "me", text: "Hey David! I saw you like hiking too." },
-                { sender: "other", text: "Yes! I go every weekend." }
-            ]},
+            { id: 1, name: "David", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80", lastMsg: "That coffee place sounds amazing!", time: "10:42 AM", online: true, messages: [] }
         ];
 
-        // --- DASHBOARD LOGIC ---
         let currentProfileIndex = 0;
         let activeChatId = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- AUTH & NAV LOGIC ---
+        function navTo(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function handleLogin() {
+            const btn = document.getElementById('btn-login');
+            btn.innerHTML = "<i class='ph-bold ph-spinner animate-spin text-xl'></i>";
+            setTimeout(() => {
+                btn.innerHTML = "Sign In";
+                navTo('screen-main');
+                renderAllData();
+                // TRIGGER PREMIUM MODAL ON LOGIN
+                setTimeout(() => toggleModal('modal-premium'), 500);
+            }, 1000);
+        }
+
+        function simulateVerification() {
+            const btn = document.getElementById('verify-btn'); btn.innerText = "Verifying...";
+            setTimeout(() => { btn.innerText = "Success!"; setTimeout(() => { navTo('screen-main'); renderAllData(); }, 800); }, 1500);
+        }
+
+        function logout() {
+            if(confirm("Are you sure you want to log out?")) navTo('screen-welcome');
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderAllData() {
             renderProfile();
             renderEvents();
-            renderCircles();
+            renderTribes();
             renderChatList();
-            renderLikesGrid();
-        });
+            document.getElementById('likes-grid').innerHTML = Array(6).fill(0).map(() => `<div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover premium-blur"></div>`).join('');
+        }
 
         function renderProfile() {
-            const container = document.getElementById('matcher-card-container');
+            const container = document.getElementById('card-container');
             if (currentProfileIndex >= profiles.length) {
-                container.innerHTML = `<div class="h-[60vh] flex flex-col items-center justify-center text-center p-6"><div class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"><i class="ph-fill ph-check text-4xl text-gray-400"></i></div><h3 class="text-xl font-bold dark:text-white">All caught up!</h3><p class="text-gray-500 mt-2">Check back later for more profiles.</p></div>`;
+                container.innerHTML = `<div class="h-[60vh] flex flex-col items-center justify-center p-6 text-center"><div class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"><i class="ph-fill ph-check text-4xl text-gray-400"></i></div><h3 class="text-xl font-bold dark:text-white">All caught up!</h3></div>`;
                 return;
             }
             const p = profiles[currentProfileIndex];
-            container.innerHTML = `
-                <div class="bg-white dark:bg-hub-card mb-4 pb-10 slide-in">
-                    <div class="relative h-[60vh]">
-                        <img src="${p.img}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-6 left-6 text-white">
-                            <h2 class="text-4xl font-bold serif flex items-center gap-2">${p.name}, ${p.age} ${p.verified ? '<i class="ph-fill ph-check-circle text-blue-500 bg-white rounded-full text-xl"></i>' : ''}</h2>
-                            <div class="text-sm font-medium text-gray-200 mt-1"><i class="ph-fill ph-map-pin"></i> ${p.dist}</div>
-                        </div>
-                    </div>
-                    <div class="p-5 border-b border-gray-100 dark:border-gray-700 flex gap-2">
-                        ${p.tags.map(t => `<span class="px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-hub-purple dark:text-purple-300 rounded-full text-xs font-bold border border-purple-100 dark:border-purple-800">${t}</span>`).join('')}
-                    </div>
-                    <div class="p-6">
-                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">My Bio</p>
-                        <p class="serif text-2xl text-gray-800 dark:text-gray-100">${p.bio}</p>
-                    </div>
-                    <div class="h-24"></div>
-                </div>
-            `;
+            container.innerHTML = `<div class="bg-white dark:bg-hub-card mb-4 pb-10"><div class="relative h-[60vh]"><img src="${p.img}" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div><div class="absolute bottom-6 left-6 text-white"><h2 class="text-4xl font-bold serif flex items-center gap-2">${p.name}, ${p.age} ${p.verified?'<i class="ph-fill ph-check-circle text-blue-500 bg-white rounded-full text-xl"></i>':''}</h2><div class="text-sm font-medium text-gray-200 mt-1"><i class="ph-fill ph-map-pin"></i> ${p.dist}</div></div></div><div class="p-5 border-b border-gray-100 dark:border-gray-700 flex gap-2">${p.tags.map(t=>`<span class="px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-hub-purple dark:text-purple-300 rounded-full text-xs font-bold border border-purple-100 dark:border-purple-800">${t}</span>`).join('')}</div><div class="p-6"><p class="text-xs font-bold text-gray-400 uppercase mb-2">My Bio</p><p class="serif text-2xl text-gray-800 dark:text-gray-100">${p.bio}</p></div><div class="h-24"></div></div>`;
         }
-
-        function handleSwipe(direction) { currentProfileIndex++; renderProfile(); }
+        function handleSwipe(dir) { currentProfileIndex++; renderProfile(); }
 
         function renderEvents() {
-            document.getElementById('events-list').innerHTML = events.map(e => `
-                <div class="btn-press bg-gradient-to-br ${e.featured ? 'from-amber-50 to-white border-amber-200' : 'from-white to-gray-50 border-gray-100'} dark:from-gray-800 dark:to-gray-900 rounded-3xl overflow-hidden shadow-lg border relative">
-                    ${e.featured ? '<div class="absolute top-4 left-4 bg-hub-amber text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md flex items-center gap-1"><i class="ph-fill ph-lightning"></i> FEATURED</div>' : ''}
-                    <div class="relative h-44"><img src="${e.img}" class="w-full h-full object-cover"></div>
-                    <div class="p-5"><h3 class="font-bold text-gray-900 dark:text-white text-xl serif">${e.title}</h3><p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium flex items-center gap-1"><i class="ph-fill ph-calendar text-hub-amber"></i> ${e.date}</p></div>
-                </div>
-            `).join('');
+            document.getElementById('events-list').innerHTML = events.map(e => `<div class="btn-press bg-gradient-to-br ${e.featured?'from-amber-50 to-white border-amber-200':'from-white to-gray-50 border-gray-100'} dark:from-gray-800 dark:to-gray-900 rounded-3xl overflow-hidden shadow-lg border relative">${e.featured?'<div class="absolute top-4 left-4 bg-hub-amber text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md flex items-center gap-1"><i class="ph-fill ph-lightning"></i> FEATURED</div>':''}<div class="relative h-44"><img src="${e.img}" class="w-full h-full object-cover"></div><div class="p-5"><h3 class="font-bold text-gray-900 dark:text-white text-xl serif">${e.title}</h3><p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-medium"><i class="ph-fill ph-calendar text-hub-amber"></i> ${e.date}</p><div class="mt-3 flex items-center gap-2"><img src="https://placehold.co/100x100/purple/white?text=${e.host[0]}" class="w-6 h-6 rounded-full"><span class="text-xs text-gray-400">Hosted by ${e.host}</span></div></div></div>`).join('');
         }
 
-        function renderCircles() {
-            document.getElementById('community-grid-lifestages').innerHTML = circles.slice(0, 2).map(c => `
-                <div onclick="openFeed(${c.id}, '${c.name}')" class="btn-press bg-white dark:bg-hub-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3">
-                    <div class="w-10 h-10 rounded-full bg-${c.color}-50 text-${c.color}-600 flex items-center justify-center text-xl"><i class="ph-fill ${c.icon}"></i></div>
-                    <div><span class="font-bold text-gray-800 dark:text-gray-100 text-sm block">${c.name}</span><span class="text-[10px] text-gray-400">${c.members} members</span></div>
-                </div>
-            `).join('');
-            document.getElementById('community-list-faith').innerHTML = circles.slice(2).map(c => `
-                <div onclick="openFeed(${c.id}, '${c.name}')" class="btn-press bg-white dark:bg-hub-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-full bg-purple-50 text-hub-purple flex items-center justify-center text-2xl"><i class="ph-fill ${c.icon}"></i></div>
-                    <div class="flex-1"><h4 class="font-bold text-gray-900 dark:text-white text-base">${c.name}</h4><p class="text-xs text-gray-500">Tap to join discussion.</p></div>
-                    <i class="ph-bold ph-caret-right text-gray-300"></i>
-                </div>
-            `).join('');
+        function renderTribes() {
+            document.getElementById('community-lifestages').innerHTML = tribes.lifestages.map(c => `<div onclick="openFeed('${c.name}')" class="btn-press bg-white dark:bg-hub-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col gap-3"><div class="w-10 h-10 rounded-full bg-${c.color}-50 text-${c.color}-600 flex items-center justify-center text-xl"><i class="ph-fill ${c.icon}"></i></div><div><span class="font-bold text-gray-800 dark:text-gray-100 text-sm block">${c.name}</span><span class="text-[10px] text-gray-400">${c.mem} members</span></div></div>`).join('');
+            document.getElementById('community-faith').innerHTML = tribes.faith.map(c => `<div onclick="openFeed('${c.name}')" class="btn-press bg-white dark:bg-hub-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-${c.color}-50 text-${c.color}-600 flex items-center justify-center text-2xl"><i class="ph-fill ${c.icon}"></i></div><div class="flex-1"><h4 class="font-bold text-gray-900 dark:text-white text-base">${c.name}</h4><p class="text-xs text-gray-500">Tap to join.</p></div><i class="ph-bold ph-caret-right text-gray-300"></i></div>`).join('');
+            document.getElementById('community-support').innerHTML = tribes.support.map(c => `<div onclick="openFeed('${c.name}')" class="btn-press bg-white dark:bg-hub-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-${c.color}-50 text-${c.color}-600 flex items-center justify-center text-2xl"><i class="ph-fill ${c.icon}"></i></div><div class="flex-1"><h4 class="font-bold text-gray-900 dark:text-white text-base">${c.name}</h4><p class="text-xs text-gray-500">Tap to join.</p></div><i class="ph-bold ph-caret-right text-gray-300"></i></div>`).join('');
         }
 
-        function openFeed(id, name) {
-            document.getElementById('community-list-view').classList.add('hidden');
+        function openFeed(name) {
             const feedView = document.getElementById('community-feed-view');
-            feedView.classList.remove('hidden'); feedView.classList.add('flex');
+            feedView.classList.remove('hidden', 'translate-x-full'); feedView.classList.add('flex', 'translate-x-0');
             document.getElementById('feed-title').innerText = name;
-            const posts = feedPosts[id] || [];
-            document.getElementById('feed-content').innerHTML = posts.map(p => `
-                <div class="bg-white dark:bg-hub-card p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-                    <div class="flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded-full bg-gray-200"></div><span class="font-bold text-sm dark:text-white">${p.user}</span><span class="text-xs text-gray-400">• ${p.time}</span></div>
-                    <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">${p.text}</p>
-                </div>
-            `).join('');
+            document.getElementById('feed-content').innerHTML = [1,2,3].map(i => `<div class="bg-white dark:bg-hub-card p-4 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm"><div class="flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded-full bg-gray-200"></div><span class="font-bold text-sm dark:text-white">User ${i}</span><span class="text-xs text-gray-400">• 2h ago</span></div><p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">Excited to be part of the ${name} circle! Can't wait to connect.</p><div class="flex gap-4 mt-3 text-gray-400 text-lg"><i class="ph-bold ph-heart"></i><i class="ph-bold ph-chat-circle"></i></div></div>`).join('');
         }
-        function closeFeed() {
-            document.getElementById('community-feed-view').classList.add('hidden'); document.getElementById('community-feed-view').classList.remove('flex');
-            document.getElementById('community-list-view').classList.remove('hidden');
-        }
+        function closeFeed() { const f = document.getElementById('community-feed-view'); f.classList.remove('translate-x-0'); f.classList.add('translate-x-full'); setTimeout(() => { f.classList.remove('flex'); f.classList.add('hidden'); }, 300); }
 
+        // --- CHAT ---
         function renderChatList() {
-            document.getElementById('new-matches-list').innerHTML = chats.map(c => `
-                <div onclick="openChat(${c.id})" class="btn-press flex flex-col items-center gap-2 min-w-[72px]">
-                    <div class="relative w-[72px] h-[72px] rounded-full p-[3px] bg-gradient-to-tr from-hub-amber to-hub-purple"><img src="${c.img}" class="w-full h-full rounded-full border-2 border-white dark:border-hub-card object-cover"></div>
-                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200">${c.name}</span>
-                </div>
-            `).join('');
-            document.getElementById('conversations-list').innerHTML = chats.map(c => `
-                <div onclick="openChat(${c.id})" class="btn-press flex items-center gap-4 bg-white dark:bg-hub-card p-4 rounded-3xl shadow-sm border border-gray-50 dark:border-gray-800">
-                    <div class="relative"><img src="${c.img}" class="w-16 h-16 rounded-full object-cover"></div>
-                    <div class="flex-1"><div class="flex justify-between items-center mb-1"><h4 class="font-bold text-gray-900 dark:text-white text-base">${c.name}</h4><span class="text-xs text-gray-400 font-medium">${c.time}</span></div><p class="text-sm text-gray-500 truncate">${c.lastMsg}</p></div>
-                </div>
-            `).join('');
+            document.getElementById('matches-row').innerHTML = chats.map(c => `<div onclick="openChat(${c.id})" class="btn-press flex flex-col items-center gap-2 min-w-[72px]"><div class="relative w-[72px] h-[72px] rounded-full p-[3px] bg-gradient-to-tr from-hub-amber to-hub-purple"><img src="${c.img}" class="w-full h-full rounded-full border-2 border-white dark:border-hub-card object-cover"></div><span class="text-xs font-bold text-gray-800 dark:text-gray-200">${c.name}</span><span class="text-[10px] text-hub-amber font-bold bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full">22h left</span></div>`).join('');
+            document.getElementById('conversations-list').innerHTML = chats.map(c => `<div onclick="openChat(${c.id})" class="btn-press flex items-center gap-4 bg-white dark:bg-hub-card p-4 rounded-3xl shadow-sm border border-gray-50 dark:border-gray-800"><div class="relative"><img src="${c.img}" class="w-16 h-16 rounded-full object-cover"></div><div class="flex-1"><div class="flex justify-between items-center mb-1"><h4 class="font-bold text-gray-900 dark:text-white text-base">${c.name}</h4><span class="text-xs text-gray-400 font-medium">${c.time}</span></div><p class="text-sm text-gray-500 truncate">${c.lastMsg}</p></div></div>`).join('');
         }
-
         function openChat(id) {
-            activeChatId = id;
-            const chat = chats.find(c => c.id === id);
-            document.getElementById('chat-list-view').classList.add('hidden');
-            const detailView = document.getElementById('chat-detail-view');
-            detailView.classList.remove('hidden'); detailView.classList.add('flex');
-            document.getElementById('chat-header-name').innerText = chat.name;
-            document.getElementById('chat-header-img').src = chat.img;
-            renderMessages(chat.messages);
+            activeChatId = id; const c = chats.find(x => x.id === id);
+            const view = document.getElementById('chat-detail-view'); view.classList.remove('hidden', 'translate-x-full'); view.classList.add('flex', 'translate-x-0');
+            document.getElementById('chat-header-name').innerText = c.name; document.getElementById('chat-header-img').src = c.img;
+            renderMessages(c.messages);
         }
-
-        function renderMessages(msgs) {
-            const container = document.getElementById('chat-messages');
-            container.innerHTML = msgs.map(m => `<div class="chat-bubble ${m.sender === 'me' ? 'chat-me' : 'chat-other'}">${m.text}</div>`).join('');
-            container.scrollTop = container.scrollHeight;
-        }
-
+        function renderMessages(msgs) { document.getElementById('chat-messages').innerHTML = msgs.map(m => `<div class="chat-bubble ${m.sender==='me'?'chat-me':'chat-other'}">${m.text}</div>`).join(''); document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight; }
         function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if(!text || !activeChatId) return;
-            const chat = chats.find(c => c.id === activeChatId);
-            chat.messages.push({ sender: 'me', text: text });
-            chat.lastMsg = text; chat.time = 'Now';
-            renderMessages(chat.messages);
-            input.value = '';
-            renderChatList();
+            const inp = document.getElementById('chat-input'); const txt = inp.value.trim(); if(!txt || !activeChatId) return;
+            const c = chats.find(x => x.id === activeChatId); c.messages.push({sender:'me', text: txt}); c.lastMsg = "You: " + txt;
+            renderMessages(c.messages); inp.value = ''; renderChatList();
         }
-
         function handleEnter(e) { if(e.key === 'Enter') sendMessage(); }
-        function closeChat() { document.getElementById('chat-detail-view').classList.add('hidden'); document.getElementById('chat-detail-view').classList.remove('flex'); document.getElementById('chat-list-view').classList.remove('hidden'); }
+        function closeChat() { const c = document.getElementById('chat-detail-view'); c.classList.remove('translate-x-0'); c.classList.add('translate-x-full'); setTimeout(() => { c.classList.remove('flex'); c.classList.add('hidden'); }, 300); }
 
-        function toggleTheme() { document.documentElement.classList.toggle('dark'); document.getElementById('theme-icon').classList.toggle('ph-moon'); document.getElementById('theme-icon').classList.toggle('ph-sun'); }
-
+        // --- GLOBAL UI ---
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
+        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+        
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(el => { el.classList.remove('text-hub-purple', 'text-hub-amber', 'text-blue-600', 'dark:text-purple-400', 'dark:text-blue-400', 'dark:text-hub-amber'); el.classList.add('text-gray-400', 'dark:text-gray-500'); el.querySelector('i').classList.replace('ph-fill', 'ph-bold'); });
-            const activeBtn = document.getElementById('nav-' + tabId);
-            activeBtn.classList.remove('text-gray-400', 'dark:text-gray-500');
-            if (tabId === 'datehub') activeBtn.classList.add('text-hub-amber', 'dark:text-hub-amber');
-            else if (tabId === 'community') activeBtn.classList.add('text-blue-600', 'dark:text-blue-400');
-            else activeBtn.classList.add('text-hub-purple', 'dark:text-purple-400');
-            activeBtn.querySelector('i').classList.replace('ph-bold', 'ph-fill');
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-hub-purple', 'text-hub-amber', 'text-blue-600', 'dark:text-purple-400', 'dark:text-blue-400', 'dark:text-hub-amber');
+                el.classList.add('text-gray-400', 'dark:text-gray-500');
+                el.querySelector('i').classList.replace('ph-fill', 'ph-bold');
+            });
+            const btn = document.getElementById('nav-' + tabId);
+            btn.classList.remove('text-gray-400', 'dark:text-gray-500');
+            if (tabId === 'datehub') btn.classList.add('text-hub-amber', 'dark:text-hub-amber');
+            else if (tabId === 'community') btn.classList.add('text-blue-600', 'dark:text-blue-400');
+            else btn.classList.add('text-hub-purple', 'dark:text-purple-400');
+            btn.querySelector('i').classList.replace('ph-bold', 'ph-fill');
         }
-
         function switchDiscoveryView(view) {
-            const stack = document.getElementById('view-stack'); const likes = document.getElementById('view-likes'); const btnStack = document.getElementById('subnav-stack'); const btnLikes = document.getElementById('subnav-likes');
-            if (view === 'stack') { stack.classList.remove('hidden'); likes.classList.add('hidden'); btnStack.classList.add('text-hub-purple', 'border-hub-purple'); btnStack.classList.remove('text-gray-400', 'border-transparent'); btnLikes.classList.remove('text-hub-purple', 'border-hub-purple'); btnLikes.classList.add('text-gray-400', 'border-transparent'); } 
+            const stack = document.getElementById('view-stack'); const likes = document.getElementById('view-likes');
+            const btnStack = document.getElementById('subnav-stack'); const btnLikes = document.getElementById('subnav-likes');
+            if (view === 'stack') { stack.classList.remove('hidden'); likes.classList.add('hidden'); btnStack.classList.add('text-hub-purple', 'border-hub-purple'); btnStack.classList.remove('text-gray-400', 'border-transparent'); btnLikes.classList.remove('text-hub-purple', 'border-hub-purple'); btnLikes.classList.add('text-gray-400', 'border-transparent'); }
             else { stack.classList.add('hidden'); likes.classList.remove('hidden'); btnLikes.classList.add('text-hub-purple', 'border-hub-purple'); btnLikes.classList.remove('text-gray-400', 'border-transparent'); btnStack.classList.remove('text-hub-purple', 'border-hub-purple'); btnStack.classList.add('text-gray-400', 'border-transparent'); }
         }
-
-        function renderLikesGrid() { document.getElementById('likes-grid').innerHTML = Array(6).fill(0).map(() => `<div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800"><img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover premium-blur"></div>`).join(''); }
-        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
+        function switchView(v) { switchDiscoveryView(v); }
     </script>
 </body>
 </html>
